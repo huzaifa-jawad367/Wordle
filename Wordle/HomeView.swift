@@ -61,6 +61,9 @@ struct KeyView: View {
 
 // MARK: – Main Wordle View
 struct WordleView: View {
+    @State private var showResult = false
+    @State private var didWin = false
+    
     @State private var grid: [[(letter: String, state: LetterState)]] =
         Array(repeating: Array(repeating: ("", .empty), count: 5), count: 6)
     @State private var letterStates: [String: LetterState] = [:]
@@ -71,50 +74,75 @@ struct WordleView: View {
     private let rows = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"]
 
     var body: some View {
-        VStack(spacing: 12) {
-            Text("WORDLE")
-                .font(.largeTitle).bold().padding(.top)
+        NavigationStack {
+            VStack(spacing: 12) {
+                Text("WORDLE")
+                    .font(.largeTitle)
+                    .bold()
+                    .padding(.top)
 
-            // Grid
-            VStack(spacing: 4) {
-                ForEach(0..<6) { row in
-                    HStack(spacing: 4) {
-                        ForEach(0..<5) { col in
-                            let cell = grid[row][col]
-                            TileView(letter: cell.letter, state: cell.state)
-                        }
-                    }
-                }
-            }
-            .padding(.vertical)
-
-            Spacer()
-
-            // Keyboard
-            VStack(spacing: 6) {
-                ForEach(rows.prefix(2), id: \.self) { rowKeys in
-                    HStack(spacing: 6) {
-                        ForEach(Array(rowKeys), id: \.self) { ch in
-                            KeyView(key: String(ch), state: letterStates[String(ch)] ?? .empty) {
-                                handleKeyPress(ch)
+                // Grid
+                VStack(spacing: 4) {
+                    ForEach(0..<6) { row in
+                        HStack(spacing: 4) {
+                            ForEach(0..<5) { col in
+                                let cell = grid[row][col]
+                                TileView(letter: cell.letter, state: cell.state)
                             }
                         }
                     }
                 }
-                HStack(spacing: 6) {
-                    KeyView(key: "ENTER", state: .empty) { submitGuess() }
-                    ForEach(Array(rows.last!), id: \.self) { ch in
-                        KeyView(key: String(ch), state: letterStates[String(ch)] ?? .empty) {
-                            handleKeyPress(ch)
+                .padding(.vertical)
+
+                Spacer()
+
+                // Keyboard
+                VStack(spacing: 6) {
+                    ForEach(rows.prefix(2), id: \.self) { rowKeys in
+                        HStack(spacing: 6) {
+                            ForEach(Array(rowKeys), id: \.self) { ch in
+                                KeyView(
+                                    key: String(ch),
+                                    state: letterStates[String(ch)] ?? .empty
+                                ) {
+                                    handleKeyPress(ch)
+                                }
+                            }
                         }
                     }
-                    KeyView(key: "⌫", state: .empty) { deleteLetter() }
+                    HStack(spacing: 6) {
+                        KeyView(key: "ENTER", state: currentCol < 5 ? .absent : .empty) {
+                            submitGuess()
+                        }
+                        .opacity(currentCol < 5 ? 0.5 : 1.0)
+                        .disabled(currentCol < 5)
+
+                        ForEach(Array(rows.last!), id: \.self) { ch in
+                            KeyView(
+                                key: String(ch),
+                                state: letterStates[String(ch)] ?? .empty
+                            ) {
+                                handleKeyPress(ch)
+                            }
+                        }
+
+                        KeyView(key: "⌫", state: .empty) {
+                            deleteLetter()
+                        }
+                    }
+                }
+                .padding(.bottom)
+            }
+            .navigationBarHidden(true)
+            .onAppear { print("🌟 Today's word is \(targetWord)") }
+            .navigationDestination(isPresented: $showResult) {
+                ResultView(success: didWin, word: targetWord) {
+                    resetGame()
                 }
             }
-            .padding(.bottom)
         }
-        .onAppear { print("🌟 Today's word is \(targetWord)") }
     }
+
 
     private func handleKeyPress(_ ch: Character) {
         guard currentRow < 6, currentCol < 5 else { return }
@@ -166,9 +194,30 @@ struct WordleView: View {
                 letterStates[letter] = newState
             }
         }
-        // Move to next row
-        currentRow += 1
+//        // Move to next row
+//        currentRow += 1
+//        currentCol = 0
+        
+        // did the user win?
+        let won = (guess == targetWord)
+        didWin = won
+        if won || currentRow == 5 {
+                showResult = true
+        } else {
+            // otherwise move to next row
+            currentRow += 1
+            currentCol = 0
+        }
+    }
+    
+    private func resetGame() {
+        // clear grid
+        grid = Array(repeating: Array(repeating: ("", .empty), count: 5), count: 6)
+        letterStates = [:]
+        currentRow = 0
         currentCol = 0
+        targetWord = WordBank.randomWord()
+        showResult = false
     }
 }
 
