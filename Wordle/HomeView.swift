@@ -19,7 +19,7 @@ enum LetterState {
             case .correct: return Color.green
         }
     }
-  
+
     var textColor: Color {
         self == .empty ? .primary : .white
     }
@@ -59,29 +59,23 @@ struct KeyView: View {
     }
 }
 
+// MARK: – Main Wordle View
 struct WordleView: View {
-    // 6 rows × 5 letters (letter + state)
     @State private var grid: [[(letter: String, state: LetterState)]] =
         Array(repeating: Array(repeating: ("", .empty), count: 5), count: 6)
-    
-    // Keyboard coloring
     @State private var letterStates: [String: LetterState] = [:]
-    
-    // Which row & column we're typing into
     @State private var currentRow: Int = 0
     @State private var currentCol: Int = 0
-    
-    // The secret word for this round
     @State private var targetWord: String = { WordBank.randomWord() }()
-    
+
     private let rows = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"]
-    
+
     var body: some View {
         VStack(spacing: 12) {
             Text("WORDLE")
                 .font(.largeTitle).bold().padding(.top)
-            
-            // MARK: – Grid
+
+            // Grid
             VStack(spacing: 4) {
                 ForEach(0..<6) { row in
                     HStack(spacing: 4) {
@@ -93,77 +87,91 @@ struct WordleView: View {
                 }
             }
             .padding(.vertical)
-            
+
             Spacer()
-            
-            // MARK: – Keyboard
+
+            // Keyboard
             VStack(spacing: 6) {
                 ForEach(rows.prefix(2), id: \.self) { rowKeys in
                     HStack(spacing: 6) {
                         ForEach(Array(rowKeys), id: \.self) { ch in
-                            KeyView(key: String(ch),
-                                    state: letterStates[String(ch)] ?? .empty) {
+                            KeyView(key: String(ch), state: letterStates[String(ch)] ?? .empty) {
                                 handleKeyPress(ch)
                             }
                         }
                     }
                 }
-                
                 HStack(spacing: 6) {
-                    KeyView(key: "ENTER", state: .empty) {
-                        submitGuess()
-                    }
+                    KeyView(key: "ENTER", state: .empty) { submitGuess() }
                     ForEach(Array(rows.last!), id: \.self) { ch in
-                        KeyView(key: String(ch),
-                                state: letterStates[String(ch)] ?? .empty) {
+                        KeyView(key: String(ch), state: letterStates[String(ch)] ?? .empty) {
                             handleKeyPress(ch)
                         }
                     }
-                    KeyView(key: "⌫", state: .empty) {
-                        deleteLetter()
-                    }
+                    KeyView(key: "⌫", state: .empty) { deleteLetter() }
                 }
             }
             .padding(.bottom)
         }
-        .onAppear {
-            print("🌟 Today's word is \(targetWord)")
-        }
+        .onAppear { print("🌟 Today's word is \(targetWord)") }
     }
-    
-    // MARK: – Fill in one letter at a time
+
     private func handleKeyPress(_ ch: Character) {
         guard currentRow < 6, currentCol < 5 else { return }
-        // Put letter into grid; leave state as .empty
         grid[currentRow][currentCol].letter = String(ch)
-        grid[currentRow][currentCol].state  = .empty
+        grid[currentRow][currentCol].state = .empty
         currentCol += 1
     }
-    
-    // MARK: – Backspace
+
     private func deleteLetter() {
         guard currentRow < 6, currentCol > 0 else { return }
         currentCol -= 1
         grid[currentRow][currentCol].letter = ""
-        grid[currentRow][currentCol].state  = .empty
+        grid[currentRow][currentCol].state = .empty
     }
-    
-    // MARK: – (placeholder) evaluate the guess
+
     private func submitGuess() {
-        // only when currentCol == 5:
         guard currentCol == 5 else { return }
-        // here you’d compare grid[currentRow][0..<5].letter
-        // against targetWord, update each cell.state, update letterStates,
-        // then move to next row:
-        //   currentRow += 1
-        //   currentCol  = 0
+        let guess = grid[currentRow].map { $0.letter }.joined()
+        var counts: [Character: Int] = [:]
+        for ch in targetWord { counts[ch, default: 0] += 1 }
+        // First pass: correct
+        var states: [LetterState] = Array(repeating: .absent, count: 5)
+        for i in 0..<5 {
+            let idx = targetWord.index(targetWord.startIndex, offsetBy: i)
+            let ch = guess[guess.index(guess.startIndex, offsetBy: i)]
+            if ch == targetWord[idx] {
+                states[i] = .correct
+                counts[ch]? -= 1
+            }
+        }
+        // Second pass: present or absent
+        for i in 0..<5 {
+            guard states[i] != .correct else { continue }
+            let ch = guess[guess.index(guess.startIndex, offsetBy: i)]
+            if let c = counts[ch], c > 0 {
+                states[i] = .present
+                counts[ch]? -= 1
+            }
+        }
+        // Apply states & update keyboard
+        for i in 0..<5 {
+            let letter = grid[currentRow][i].letter
+            let newState = states[i]
+            grid[currentRow][i].state = newState
+            let old = letterStates[letter] ?? .empty
+            if newState == .correct
+                || (newState == .present && old != .correct)
+                || (newState == .absent && old == .empty) {
+                letterStates[letter] = newState
+            }
+        }
+        // Move to next row
+        currentRow += 1
+        currentCol = 0
     }
 }
 
-// MARK: – Preview
-
 struct WordleView_Previews: PreviewProvider {
-  static var previews: some View {
-    WordleView()
-  }
+    static var previews: some View { WordleView() }
 }
