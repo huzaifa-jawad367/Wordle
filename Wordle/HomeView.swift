@@ -61,7 +61,7 @@ struct KeyView: View {
 
 // MARK: – Main Wordle View
 struct WordleView: View {
-    // Your game state goes here:
+    // Game state goes here:
     // 6 rows × 5 letters
     @State private var grid: [[(letter: String, state: LetterState)]] =
     Array(repeating: Array(repeating: ("", .empty), count: 5), count: 6)
@@ -72,7 +72,14 @@ struct WordleView: View {
     // Keyboard rows
     private let rows = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"]
     
+    /// The word the user has to guess this round
+    @State private var targetWord: String = {
+        WordBank.randomWord()
+    }()
+    
+    
     var body: some View {
+        
         VStack(spacing: 12) {
             // Title / spacing
             Text("WORDLE")
@@ -129,6 +136,9 @@ struct WordleView: View {
               }
             }
             .padding(.bottom)
+        }
+        .onAppear {
+            print("🌟 Today's word is \(targetWord)") 
         }
     }
     
