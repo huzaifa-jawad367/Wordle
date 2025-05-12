@@ -8,62 +8,58 @@
 import SwiftUI
 
 // MARK: – Model
-
 enum LetterState {
-  case empty, absent, present, correct
-  
-  var background: Color {
-    switch self {
-    case .empty:   return Color(.systemGray6)
-    case .absent:  return Color(.systemGray)
-    case .present: return Color.yellow
-    case .correct: return Color.green
+    case empty, absent, present, correct
+
+    var background: Color {
+        switch self {
+            case .empty:   return Color(.systemGray6)
+            case .absent:  return Color(.systemGray)
+            case .present: return Color.yellow
+            case .correct: return Color.green
+        }
     }
-  }
   
-  var textColor: Color {
-    self == .empty ? .primary : .white
-  }
+    var textColor: Color {
+        self == .empty ? .primary : .white
+    }
 }
 
 // MARK: – Tile View
-
 struct TileView: View {
-  let letter: String
-  let state: LetterState
-  
-  var body: some View {
-    ZStack {
-      RoundedRectangle(cornerRadius: 4)
-        .fill(state.background)
-      Text(letter)
-        .font(.system(size: 24, weight: .bold))
-        .foregroundColor(state.textColor)
+    let letter: String
+    let state: LetterState
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 4)
+                .fill(state.background)
+            Text(letter)
+                .font(.system(size: 24, weight: .bold))
+                .foregroundColor(state.textColor)
+        }
+        .frame(width: 50, height: 50)
     }
-    .frame(width: 50, height: 50)
-  }
 }
 
 // MARK: – Keyboard Key View
-
 struct KeyView: View {
-  let key: String
-  let state: LetterState
-  let action: () -> Void
-  
-  var body: some View {
-    Button(action: action) {
-      Text(key)
-        .font(.system(size: 16, weight: .semibold))
-        .frame(minWidth: 30, minHeight: 44)
-        .background(RoundedRectangle(cornerRadius: 4).fill(state.background))
-        .foregroundColor(state.textColor)
+    let key: String
+    let state: LetterState
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(key)
+                .font(.system(size: 16, weight: .semibold))
+                .frame(minWidth: 30, minHeight: 44)
+                .background(RoundedRectangle(cornerRadius: 4).fill(state.background))
+                .foregroundColor(state.textColor)
+        }
     }
-  }
 }
 
 // MARK: – Main Wordle View
-
 struct WordleView: View {
     // Your game state goes here:
     // 6 rows × 5 letters
