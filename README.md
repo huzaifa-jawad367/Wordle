@@ -10,13 +10,13 @@ https://github.com/user-attachments/assets/96988fda-ae58-43fc-bf4e-768ecceee2fa
 
 * 6×5 Grid: Enter guesses into a 6-row, 5-column grid
 
-Color Feedback:
+* Color Feedback:
 
-🟩 Correct position
+  * 🟩 Correct position
 
-🟨 Present but wrong position
+  * 🟨 Present but wrong position
 
-⬜ Absent letter
+  * ⬜ Absent letter
 
 On-Screen Keyboard: Colors update to reflect letter states
 
