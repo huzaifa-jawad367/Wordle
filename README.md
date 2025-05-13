@@ -18,26 +18,26 @@ https://github.com/user-attachments/assets/96988fda-ae58-43fc-bf4e-768ecceee2fa
 
   * ⬜ Absent letter
 
-On-Screen Keyboard: Colors update to reflect letter states
+* On-Screen Keyboard: Colors update to reflect letter states
 
-Word Validation: Checks guesses against a bundled JSON word list
+* Word Validation: Checks guesses against a bundled JSON word list
 
-Dynamic Daily Word: Pulls a random word (or your custom daily puzzle) from WordList.json
+* Dynamic Daily Word: Pulls a random word (or your custom daily puzzle) from WordList.json
 
-Result Screen:
+* Result Screen:
 
-Gradient background (green/red)
+ * Gradient background (green/red)
 
-Success/fail titles & icons
+ * Success/fail titles & icons
 
-Confetti animation on success
+ * Confetti animation on success
 
-“Try Again” button to reset the game
+ * “Try Again” button to reset the game
 
-Clean Architecture:
+* Clean Architecture:
 
-WordBank loads words from JSON
+ * WordBank loads words from JSON
 
-WordleGame logic separated from UI (recommended refactor)
+ * WordleGame logic separated from UI (recommended refactor)
 
-Easy-to-extend for themed modes, leaderboards, etc.
+ * Easy-to-extend for themed modes, leaderboards, etc.
