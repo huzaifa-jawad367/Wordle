@@ -26,13 +26,13 @@ https://github.com/user-attachments/assets/96988fda-ae58-43fc-bf4e-768ecceee2fa
 
 * Result Screen:
 
- * Gradient background (green/red)
+  * Gradient background (green/red)
 
- * Success/fail titles & icons
+  * Success/fail titles & icons
 
- * Confetti animation on success
+  * Confetti animation on success
 
- * “Try Again” button to reset the game
+  * “Try Again” button to reset the game
 
 * Clean Architecture:
 
