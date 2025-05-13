@@ -36,8 +36,8 @@ https://github.com/user-attachments/assets/96988fda-ae58-43fc-bf4e-768ecceee2fa
 
 * Clean Architecture:
 
- * WordBank loads words from JSON
+  * WordBank loads words from JSON
 
- * WordleGame logic separated from UI (recommended refactor)
+  * WordleGame logic separated from UI (recommended refactor)
 
- * Easy-to-extend for themed modes, leaderboards, etc.
+  * Easy-to-extend for themed modes, leaderboards, etc.
