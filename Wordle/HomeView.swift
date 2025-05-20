@@ -107,6 +107,8 @@ struct WordleView: View {
     @State private var targetWord: String = { WordBank.randomWord().uppercased() }()
 
     private let rows = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"]
+    
+    @State private var showInvalidAlert = false
 
     var body: some View {
         NavigationStack {
@@ -170,6 +172,14 @@ struct WordleView: View {
             }
             .navigationBarHidden(true)
             .onAppear { print("🌟 Today's word is \(targetWord)") }
+            .alert("Not in word list",
+                   isPresented: $showInvalidAlert,
+                   actions: {
+                     Button("OK", role: .cancel) { }
+                   },
+                   message: {
+                     Text("Please enter a valid five-letter word.")
+                   })
             .navigationDestination(isPresented: $showResult) {
                 ResultView(success: didWin, word: targetWord) {
                     resetGame()
@@ -212,6 +222,7 @@ struct WordleView: View {
         // now test against the set you just loaded
         guard Self.validWords.contains(guess) else {
             print("🚫 “\(guess)” not in validWords (count: \(Self.validWords.count))")
+            showInvalidAlert = true
             return
         }
         
