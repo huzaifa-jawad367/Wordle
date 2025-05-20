@@ -61,6 +61,41 @@ struct KeyView: View {
 
 // MARK: – Main Wordle View
 struct WordleView: View {
+    
+    private static let validWords: Set<String> = {
+        // 1. Debug start
+        print("🔍 Loading valid_words.txt…")
+        
+        // 2. Try to find it in the main bundle (no subdirectory)
+        guard let url = Bundle.main.url(
+            forResource: "valid_words",
+            withExtension: "txt"
+        ) else {
+            print("❌ valid_words.txt not found in bundle")
+            return []
+        }
+        print("✅ Found valid_words.txt at \(url.path)")
+        
+        // 3. Read its contents
+        let content: String
+        do {
+            content = try String(contentsOf: url, encoding: .utf8)
+        } catch {
+            print("❌ Failed to read valid_words.txt:", error)
+            return []
+        }
+        
+        // 4. Split & uppercase lines
+        let lines = content
+            .split(whereSeparator: \.isNewline)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).uppercased() }
+            .filter { !$0.isEmpty }
+        
+        print("🎉 Loaded \(lines.count) valid words")
+        return Set(lines)
+    }()
+
+    
     @State private var showResult = false
     @State private var didWin = false
     
@@ -69,7 +104,7 @@ struct WordleView: View {
     @State private var letterStates: [String: LetterState] = [:]
     @State private var currentRow: Int = 0
     @State private var currentCol: Int = 0
-    @State private var targetWord: String = { WordBank.randomWord() }()
+    @State private var targetWord: String = { WordBank.randomWord().uppercased() }()
 
     private let rows = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"]
 
@@ -160,7 +195,26 @@ struct WordleView: View {
 
     private func submitGuess() {
         guard currentCol == 5 else { return }
-        let guess = grid[currentRow].map { $0.letter }.joined()
+//        let guess = grid[currentRow].map { $0.letter }.joined()
+//        
+//        guard Self.validWords.contains(guess.lowercased()) else {
+//            print("Valid words: \(Self.validWords.joined(separator: ","))")
+//            print("Not a valid word: \(guess)")
+//            // Word not in list: you can show an alert or shake the row here
+//            return
+//        }
+
+        let guess = grid[currentRow]
+                    .map { $0.letter }
+                    .joined()
+                    .uppercased()          // normalize to UPPERCASE
+
+        // now test against the set you just loaded
+        guard Self.validWords.contains(guess) else {
+            print("🚫 “\(guess)” not in validWords (count: \(Self.validWords.count))")
+            return
+        }
+        
         var counts: [Character: Int] = [:]
         for ch in targetWord { counts[ch, default: 0] += 1 }
         // First pass: correct
@@ -216,7 +270,7 @@ struct WordleView: View {
         letterStates = [:]
         currentRow = 0
         currentCol = 0
-        targetWord = WordBank.randomWord()
+        targetWord = WordBank.randomWord().uppercased()
         showResult = false
     }
 }
